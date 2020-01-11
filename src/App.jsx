@@ -1,7 +1,7 @@
-import React, { /*useContext*/ } from 'react'
+import React, { useContext } from 'react'
 import './App.css'
 import { useParams } from "react-router-dom"
-import { StateRouter, RouteView } from "./StateRouter"
+import { StateRouter, RouteView, RoutingContext } from "./StateRouter"
 
 
 const Batch = () => <h2>Batch frame</h2>
@@ -23,6 +23,12 @@ const Detail = () => <h2>Detail frame</h2>
 
 const Operation = () => {
     var params = useParams()
+    const rc = useContext(RoutingContext)
+    console.log("- previousSegments", rc.segments)
+    const currentSegment = {path: rc.pathForThisLevel, params};
+    console.log("- currentSegment", params)
+    console.log("- combined", [ ...rc.segments, currentSegment ])
+
     return <>
         <h2>Operation frame for operation number {params.operationNumber}</h2>
     </>
@@ -32,16 +38,19 @@ const Material = () => <h2>Material frame</h2>
 
 const Order = () => {
     const params = useParams()
+    const rc = useContext(RoutingContext)
+    const tenantId = rc.segments[1].params.tenantId;   //TODO: This should be from segments[0], not segments[1]
+
     console.log("-", params)
     return <>
         <h2>Order frame for order number: {params.orderNumber}</h2>
         <RouteView>
             <ul>
                 TODO: params.tenantId is not available here! Should be able to default it!!!
-                <li><a href={`/tenant/${params.tenantId}/order/${params.orderNumber}/operation/10`}>Operation 10</a></li>
-                <li><a href={`/tenant/${params.tenantId}/order/${params.orderNumber}/operation/20`}>Operation 20</a></li>
-                <li><a href={`/tenant/${params.tenantId}/order/${params.orderNumber}/operation/30`}>Operation 30</a></li>
-                <li><a href={`/tenant/${params.tenantId}/order/${params.orderNumber}/operation/40`}>Operation 40</a></li>
+                <li><a href={`/tenant/${tenantId}/order/${params.orderNumber}/operation/10`}>Operation 10</a></li>
+                <li><a href={`/tenant/${tenantId}/order/${params.orderNumber}/operation/20`}>Operation 20</a></li>
+                <li><a href={`/tenant/${tenantId}/order/${params.orderNumber}/operation/30`}>Operation 30</a></li>
+                <li><a href={`/tenant/${tenantId}/order/${params.orderNumber}/operation/40`}>Operation 40</a></li>
             </ul>
         </RouteView>
     </>
@@ -63,46 +72,68 @@ const Tenant = () => {
     </>
 }
 
+const RootComponent = () => <>
+    <h2>This is RootComponent</h2>
+    <RouteView>
+        This is fallback content for RootComponent
+    </RouteView>
+</>
+
 const mainRoutes = [
     {
-        url: "/home",
-        component: <WelcomeToProflow />,
-        nestedRoutes: []
-    },
-    {
-        url: "/tenant/:tenantId",
-        component: <Tenant />,
+        state: "app",
+        path: "/",
+        component: <RootComponent />,
         nestedRoutes: [
             {
-                url: "/dashboard",
-                component: <Dashboard />,
+                state: "home",
+                path: "/home",
+                component: <WelcomeToProflow />,
                 nestedRoutes: []
             },
             {
-                url: "/order/:orderNumber",
-                component: <Order />,
+                state: "tenant",
+                path: "/tenant/:tenantId",
+                component: <Tenant />,
                 nestedRoutes: [
                     {
-                        url: "/detail",
-                        component: <Detail />,
+                        state: "dashboard",
+                        path: "/dashboard",
+                        component: <Dashboard />,
                         nestedRoutes: []
                     },
                     {
-                        url: "/operation/:operationNumber",
-                        component: <Operation />,
-                        nestedRoutes: []
+                        state: "order",
+                        path: "/order/:orderNumber",
+                        component: <Order />,
+                        nestedRoutes: [
+                            {
+                                state: "detail",
+                                path: "/detail",
+                                component: <Detail />,
+                                nestedRoutes: []
+                            },
+                            {
+                                state: "operation",
+                                path: "/operation/:operationNumber",
+                                component: <Operation />,
+                                nestedRoutes: []
+                            },
+                            {
+                                state: "material",
+                                path: "/material",
+                                component: <Material />,
+                                nestedRoutes: []
+                            }
+                        ]
                     },
                     {
-                        url: "/material",
-                        component: <Material />,
+                        state: "batch",
+                        path: "/batch",
+                        component: <Batch />,
                         nestedRoutes: []
                     }
                 ]
-            },
-            {
-                url: "/batch",
-                component: <Batch />,
-                nestedRoutes: []
             }
         ]
     }
