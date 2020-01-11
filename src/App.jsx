@@ -1,76 +1,91 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import './App.css'
 import { useParams } from "react-router-dom"
-import { StateRouter, RouteView, RoutingContext } from "./StateRouter"
+import { StateRouter, RouteView, useStateRouter } from "./StateRouter/index"
 
 
 const Batch = () => <h2>Batch frame</h2>
 
-const WelcomeToProflow = () => <>
-    <h2>Welcome to Proflow</h2>
-    <ul>
-        <li><a href="/tenant/alfa">Alfa</a></li>
-        <li><a href="/tenant/beta">Beta</a></li>
-        <li><a href="/tenant/gamma">Gamma</a></li>
-        <li><a href="/tenant/delta">Delta</a></li>
-    </ul>
-</>
+const WelcomeToProflow = () => {
+    const stateRouter = useStateRouter()
+    return <>
+        <h2>Welcome to Proflow</h2>
+        <ul>
+            <li><a href={stateRouter.createStateUrl("../tenant", { tenantId: "alfa" })}>alfa</a></li>
+            <li><a href={stateRouter.createStateUrl("/app/tenant", { tenantId: "beta" })}>beta</a></li>
+            <li><a href={stateRouter.createStateUrl("../tenant", { tenantId: "gamma" })}>gamma</a></li>
+            <li><a href={stateRouter.createStateUrl("/app/tenant", { tenantId: "delta" })}>delta</a></li>
+        </ul>
+    </>
+}
 
 
-const Dashboard = () => <h2>Dashboard frame</h2>
+const Dashboard = () => {
+    const stateRouter = useStateRouter()
+    return <>
+        <h2>Dashboard frame</h2>
+        <p>
+            Quick switch tenant
+            &nbsp;<a href={stateRouter.createStateUrl(".", { tenantId: "alfa" })}>alfa</a>
+            &nbsp;<a href={stateRouter.createStateUrl(".", { tenantId: "beta" })}>beta</a>
+            &nbsp;<a href={stateRouter.createStateUrl(".", { tenantId: "gamma" })}>gamma</a>
+            &nbsp;<a href={stateRouter.createStateUrl(".", { tenantId: "delta" })}>delta</a>
+        </p>
+    </>
+}
+
 
 const Detail = () => <h2>Detail frame</h2>
 
+
 const Operation = () => {
     var params = useParams()
-    const rc = useContext(RoutingContext)
-    console.log("- previousSegments", rc.segments)
-    const currentSegment = {path: rc.pathForThisLevel, params};
-    console.log("- currentSegment", params)
-    console.log("- combined", [ ...rc.segments, currentSegment ])
 
     return <>
         <h2>Operation frame for operation number {params.operationNumber}</h2>
     </>
 }
 
+
 const Material = () => <h2>Material frame</h2>
+
 
 const Order = () => {
     const params = useParams()
-    const rc = useContext(RoutingContext)
-    const tenantId = rc.segments[1].params.tenantId;   //TODO: This should be from segments[0], not segments[1]
+    const stateRouter = useStateRouter()
 
-    console.log("-", params)
     return <>
         <h2>Order frame for order number: {params.orderNumber}</h2>
         <RouteView>
             <ul>
-                TODO: params.tenantId is not available here! Should be able to default it!!!
-                <li><a href={`/tenant/${tenantId}/order/${params.orderNumber}/operation/10`}>Operation 10</a></li>
-                <li><a href={`/tenant/${tenantId}/order/${params.orderNumber}/operation/20`}>Operation 20</a></li>
-                <li><a href={`/tenant/${tenantId}/order/${params.orderNumber}/operation/30`}>Operation 30</a></li>
-                <li><a href={`/tenant/${tenantId}/order/${params.orderNumber}/operation/40`}>Operation 40</a></li>
+                <li><a href={stateRouter.createStateUrl("./operation", { operationNumber: 10 })}>Operation 10</a></li>
+                <li><a href={stateRouter.createStateUrl("./operation", { operationNumber: 20 })}>Operation 20</a></li>
+                <li><a href={stateRouter.createStateUrl("./operation", { operationNumber: 30 })}>Operation 30</a></li>
+                <li><a href={stateRouter.createStateUrl("./operation", { operationNumber: 40 })}>Operation 40</a></li>
             </ul>
         </RouteView>
     </>
 }
 
+
 const Tenant = () => {
     const params = useParams()
+    const stateRouter = useStateRouter()
+
     return <>
         <h2>Tenant Frame for tenant id: {params.tenantId}</h2>
         <RouteView>
             <ul>
-                <li><a href={`/tenant/${params.tenantId}/dashboard`}>Dashboard</a></li>
-                <li><a href={`/tenant/${params.tenantId}/batch`}>Batch</a></li>
-                <li><a href={`/tenant/${params.tenantId}/order/100`}>Order 100</a></li>
-                <li><a href={`/tenant/${params.tenantId}/order/101`}>Order 101</a></li>
-                <li><a href={`/tenant/${params.tenantId}/order/102`}>Order 102</a></li>
+                <li><a href={stateRouter.createStateUrl("./dashboard")}>Dashboard</a></li>
+                <li><a href={stateRouter.createStateUrl("./batch")}>Batch</a></li>
+                <li><a href={stateRouter.createStateUrl("./order", { orderNumber: 123000100 })}>Order number 123000100</a></li>
+                <li><a href={stateRouter.createStateUrl("./order", { orderNumber: 123000101 })}>Order number 123000101</a></li>
+                <li><a href={stateRouter.createStateUrl("./order", { orderNumber: 123000102 })}>Order number 123000102</a></li>
             </ul>
         </RouteView>
     </>
 }
+
 
 const RootComponent = () => <>
     <h2>This is RootComponent</h2>
@@ -79,51 +94,52 @@ const RootComponent = () => <>
     </RouteView>
 </>
 
-const mainRoutes = [
+
+const mainStates = [
     {
         state: "app",
         path: "/",
         component: <RootComponent />,
-        nestedRoutes: [
+        nestedStates: [
             {
                 state: "home",
                 path: "/home",
                 component: <WelcomeToProflow />,
-                nestedRoutes: []
+                nestedStates: []
             },
             {
                 state: "tenant",
                 path: "/tenant/:tenantId",
                 component: <Tenant />,
-                nestedRoutes: [
+                nestedStates: [
                     {
                         state: "dashboard",
                         path: "/dashboard",
                         component: <Dashboard />,
-                        nestedRoutes: []
+                        nestedStates: []
                     },
                     {
                         state: "order",
                         path: "/order/:orderNumber",
                         component: <Order />,
-                        nestedRoutes: [
+                        nestedStates: [
                             {
                                 state: "detail",
                                 path: "/detail",
                                 component: <Detail />,
-                                nestedRoutes: []
+                                nestedStates: []
                             },
                             {
                                 state: "operation",
                                 path: "/operation/:operationNumber",
                                 component: <Operation />,
-                                nestedRoutes: []
+                                nestedStates: []
                             },
                             {
                                 state: "material",
                                 path: "/material",
                                 component: <Material />,
-                                nestedRoutes: []
+                                nestedStates: []
                             }
                         ]
                     },
@@ -131,7 +147,7 @@ const mainRoutes = [
                         state: "batch",
                         path: "/batch",
                         component: <Batch />,
-                        nestedRoutes: []
+                        nestedStates: []
                     }
                 ]
             }
@@ -139,10 +155,11 @@ const mainRoutes = [
     }
 ]
 
+
 export const App = () => {
     return <>
         <h1>Proflow App Frame</h1>
-        <StateRouter routes={mainRoutes} >
+        <StateRouter states={mainStates} >
             <p>Fallback content for invalid url at first level</p>
         </StateRouter>
     </>
