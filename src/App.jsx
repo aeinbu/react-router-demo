@@ -1,20 +1,23 @@
 import React from 'react'
 import './App.css'
 import { useParams } from "react-router-dom"
-import { StateRouter, RouteView, useStateRouter } from "./StateRouter/index"
+import { StateRouter, RouteView, useStateRouter } from "./StateRouter/"
 
+
+const tenants = ["Alfa", "Beta", "Gamma", "Delta"]
+const operationNumbers = [10,20,30,40,50,60]
 
 const Batch = () => <h2>Batch frame</h2>
+
 
 const WelcomeToProflow = () => {
     const stateRouter = useStateRouter()
     return <>
         <h2>Welcome to Proflow</h2>
         <ul>
-            <li><a href={stateRouter.createStateUrl("../tenant", { tenantId: "alfa" })}>alfa</a></li>
-            <li><a href={stateRouter.createStateUrl("/app/tenant", { tenantId: "beta" })}>beta</a></li>
-            <li><a href={stateRouter.createStateUrl("../tenant", { tenantId: "gamma" })}>gamma</a></li>
-            <li><a href={stateRouter.createStateUrl("/app/tenant", { tenantId: "delta" })}>delta</a></li>
+            {
+                tenants.map(tenant => <li><a key={tenant} href={stateRouter.createStateUrl("../tenant", { tenantId: tenant })}>{tenant}</a></li>)
+            }
         </ul>
     </>
 }
@@ -26,10 +29,9 @@ const Dashboard = () => {
         <h2>Dashboard frame</h2>
         <p>
             Quick switch tenant
-            &nbsp;<a href={stateRouter.createStateUrl(".", { tenantId: "alfa" })}>alfa</a>
-            &nbsp;<a href={stateRouter.createStateUrl(".", { tenantId: "beta" })}>beta</a>
-            &nbsp;<a href={stateRouter.createStateUrl(".", { tenantId: "gamma" })}>gamma</a>
-            &nbsp;<a href={stateRouter.createStateUrl(".", { tenantId: "delta" })}>delta</a>
+            {
+                tenants.map(tenant => <> <a key={tenant} href={stateRouter.createStateUrl(".", { tenantId: tenant })}>{tenant}</a></>)
+            }
         </p>
     </>
 }
@@ -58,10 +60,9 @@ const Order = () => {
         <h2>Order frame for order number: {params.orderNumber}</h2>
         <RouteView>
             <ul>
-                <li><a href={stateRouter.createStateUrl("./operation", { operationNumber: 10 })}>Operation 10</a></li>
-                <li><a href={stateRouter.createStateUrl("./operation", { operationNumber: 20 })}>Operation 20</a></li>
-                <li><a href={stateRouter.createStateUrl("./operation", { operationNumber: 30 })}>Operation 30</a></li>
-                <li><a href={stateRouter.createStateUrl("./operation", { operationNumber: 40 })}>Operation 40</a></li>
+                {
+                    operationNumbers.map(operationNumber => <li><a href={stateRouter.createStateUrl("./operation", { operationNumber })}>Operation {operationNumber}</a></li>)
+                }
             </ul>
         </RouteView>
     </>
